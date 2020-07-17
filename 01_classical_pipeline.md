@@ -292,6 +292,11 @@ host_viral_interactions <-
 ``` r
 ## We translate the human uniprot symbols to hgnc. 
 ensembl <- useMart('ensembl', dataset="hsapiens_gene_ensembl")
+```
+
+    ## Ensembl site unresponsive, trying uswest mirror
+
+``` r
 # listAttributes(ensembl)
 uniprot_hgnc <- 
   getBM(attributes=c("uniprotswissprot", "hgnc_symbol"),  
@@ -374,6 +379,12 @@ OutputCyto(carnival_results_top50tf_pleitropic_minsize15,
     outputFile="Carnival_Results/carnival_results_top50tf_pleitropic_minsize15")
 ```
 
+Network with the results: Rectangles are the most active transcription
+factors after infection and the inverse triangles are the perturbed
+nodes. Ellipses are signaling intermediates proteins linking those
+perturbations and TFs. Red means activation after infection and blue the
+opposite.
+
 <br><br>
 ![](Carnival_Results/carnival_results_top50tf_pleitropic_minsize15Network.sif.png)
 <br><br>
@@ -408,6 +419,42 @@ OutputCyto(carnival_results_top50tf_pleitropic_minsize15_activation,
 
 <br><br>
 ![](Carnival_Results/carnival_results_top50tf_pleitropic_minsize15_activationNetwork.sif.png)
+<br><br>
+
+Finally, I am going to run CARNIVAL defining the perturbations (human
+proteins that interact with the viral proteins) but without defining
+their effect (stimulation or inhibition). CARNIVAL will infer the
+effect.
+
+``` r
+human_proteins_undefined_perturbation <- 
+  host_viral_interactions_hgnc_filter %>% 
+  dplyr::mutate(sign = NaN) %>%
+  dplyr::select(target, sign) %>% 
+  dplyr::mutate(sign = as.numeric(sign)) %>% 
+  dplyr::distinct() %>% 
+  dplyr::filter(target %in% all_source_nodes) %>%
+  tibble::column_to_rownames(var = "target") %>% 
+  t() %>% as.data.frame()
+
+carnival_results_top50tf_pleitropic_minsize15_undefinedEffect <-runCARNIVAL(
+    solverPath="/opt/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/cplex",
+    netObj=carnival_pkn,
+    measObj=tf_top50_pleitropic,
+    inputObj = human_proteins_undefined_perturbation,
+    # dir_name="Carnival_Results",
+    weightObj=progeny_weigths,
+    # nodeID = 'gene',
+    timelimit = 14400,
+    solver = "cplex")
+saveRDS(carnival_results_top50tf_pleitropic_minsize15_undefinedEffect, 
+    file = "Carnival_Results/carnival_results_top50tf_pleitropic_minsize15_undefinedEffect.rds")
+OutputCyto(carnival_results_top50tf_pleitropic_minsize15_undefinedEffect, 
+    outputFile="Carnival_Results/carnival_results_top50tf_pleitropic_minsize15_undefinedEffect")
+```
+
+<br><br>
+![](Carnival_Results/carnival_results_top50tf_pleitropic_minsize15_undefinedEffectNetwork.sif.png)
 <br><br>
 
 ## Important References
