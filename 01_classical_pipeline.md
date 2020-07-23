@@ -48,6 +48,8 @@ library(CARNIVAL)
 library(ggplot2)
 library(OmnipathR)
 library(biomaRt)
+library(grid)
+library(gridExtra)
 
 ## We also define a function to format the CARNIVAL output to cytoscape
 OutputCyto <- function(CarnivalResults, outputFile) {
@@ -137,6 +139,37 @@ ggplot(pathways_zscore_df,aes(x = reorder(Pathway, NES), y = NES)) +
 
 ![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
+It is quite shocking that the MAPK pathway in un-active. This pathway
+was usually found to be more active after SARS-CoV-2 infection in other
+studies.
+
+``` r
+weight_matrix <- getModel("Human", top=100)
+weight_matrix <- data.frame(names = row.names(weight_matrix), 
+  row.names = NULL, weight_matrix)
+plots <- progenyScatter(all_genes_dea_stat %>% 
+  tibble::rownames_to_column(var = "GeneID"), weight_matrix)
+```
+
+We therefore check which genes are contributing the most to the MAPK
+progeny score. In these plots, we have the progeny scores for each
+pathway and stats of the different genes. In red, we will have the genes
+contributing to the positive activation score and on blue the opposite.
+
+``` r
+grid.draw(plots[[1]]$MAPK)
+```
+
+![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+We also check for the JAK-STAT pathway:
+
+``` r
+grid.draw(plots[[1]]$JAK.STAT)
+```
+
+![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
 ### Transcription factor activity with Dorothea and Viper.
 
 Now, we estimate the transcription factor (TF) activity using the
@@ -193,7 +226,7 @@ ggplot(tf_activities_top25,aes(x = reorder(Tf, NES), y = NES)) +
     xlab("Transcription Factors")
 ```
 
-![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 I run again Viper with a more conservative setup. The TFs need to
 regulate at least 15 targets genes and I include the correction for
@@ -227,7 +260,7 @@ ggplot(tf_activities_top25_pleitropic,aes(x = reorder(Tf, NES), y = NES)) +
     xlab("Transcription Factors")
 ```
 
-![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](01_classical_pipeline_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ### Running CARNIVAL
 
@@ -292,11 +325,6 @@ host_viral_interactions <-
 ``` r
 ## We translate the human uniprot symbols to hgnc. 
 ensembl <- useMart('ensembl', dataset="hsapiens_gene_ensembl")
-```
-
-    ## Ensembl site unresponsive, trying uswest mirror
-
-``` r
 # listAttributes(ensembl)
 uniprot_hgnc <- 
   getBM(attributes=c("uniprotswissprot", "hgnc_symbol"),  
@@ -501,13 +529,13 @@ OutputCyto(carnival_results_top50tf_pleitropic_minsize15_undefinedEffect,
 
 ## Session Info Details
 
-    ## R version 4.0.1 (2020-06-06)
+    ## R version 4.0.2 (2020-06-22)
     ## Platform: x86_64-pc-linux-gnu (64-bit)
-    ## Running under: Ubuntu 19.10
+    ## Running under: Ubuntu 20.04 LTS
     ## 
     ## Matrix products: default
-    ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3
-    ## LAPACK: /usr/lib/x86_64-linux-gnu/libopenblasp-r0.3.7.so
+    ## BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
+    ## LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
     ## 
     ## locale:
     ##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
@@ -518,41 +546,41 @@ OutputCyto(carnival_results_top50tf_pleitropic_minsize15_undefinedEffect,
     ## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
     ## 
     ## attached base packages:
-    ## [1] stats     graphics  grDevices utils     datasets  methods   base     
+    ## [1] grid      stats     graphics  grDevices utils     datasets  methods  
+    ## [8] base     
     ## 
     ## other attached packages:
-    ##  [1] biomaRt_2.44.0  OmnipathR_1.3.2 jsonlite_1.6.1  igraph_1.2.5   
-    ##  [5] ggplot2_3.3.1   CARNIVAL_1.0.1  dorothea_1.0.0  progeny_1.11.1 
-    ##  [9] readr_1.3.1     dplyr_1.0.0     tibble_3.0.1   
+    ##  [1] gridExtra_2.3   biomaRt_2.44.1  OmnipathR_1.3.3 jsonlite_1.7.0 
+    ##  [5] igraph_1.2.5    ggplot2_3.3.2   CARNIVAL_1.0.1  dorothea_1.0.2 
+    ##  [9] progeny_1.11.1  readr_1.3.1     dplyr_1.0.0     tibble_3.0.3   
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] segmented_1.1-0      Category_2.54.0      bitops_1.0-6        
-    ##  [4] bit64_0.9-7          doParallel_1.0.15    progress_1.2.2      
-    ##  [7] httr_1.4.1           tools_4.0.1          R6_2.4.1            
+    ##  [1] segmented_1.2-0      Category_2.54.0      bitops_1.0-6        
+    ##  [4] bit64_0.9-7.1        doParallel_1.0.15    progress_1.2.2      
+    ##  [7] httr_1.4.2           tools_4.0.2          R6_2.4.1            
     ## [10] KernSmooth_2.23-17   DBI_1.1.0            BiocGenerics_0.34.0 
     ## [13] colorspace_1.4-1     withr_2.2.0          tidyselect_1.1.0    
-    ## [16] gridExtra_2.3        prettyunits_1.1.1    bit_1.1-15.2        
-    ## [19] curl_4.3             compiler_4.0.1       graph_1.66.0        
-    ## [22] Biobase_2.48.0       labeling_0.3         scales_1.1.1        
-    ## [25] genefilter_1.70.0    RBGL_1.64.0          askpass_1.1         
-    ## [28] rappdirs_0.3.1       stringr_1.4.0        digest_0.6.25       
-    ## [31] mixtools_1.2.0       rmarkdown_2.2        pkgconfig_2.0.3     
-    ## [34] htmltools_0.4.0      bcellViper_1.24.0    dbplyr_1.4.4        
-    ## [37] rlang_0.4.6          RSQLite_2.2.0        generics_0.0.2      
-    ## [40] farver_2.0.3         viper_1.22.0         RCurl_1.98-1.2      
-    ## [43] magrittr_1.5         Matrix_1.2-18        Rcpp_1.0.4.6        
-    ## [46] munsell_0.5.0        S4Vectors_0.26.1     lifecycle_0.2.0     
-    ## [49] stringi_1.4.6        yaml_2.2.1           UniProt.ws_2.28.0   
-    ## [52] MASS_7.3-51.6        BiocFileCache_1.12.0 grid_4.0.1          
-    ## [55] blob_1.2.1           parallel_4.0.1       ggrepel_0.8.2       
-    ## [58] crayon_1.3.4         lattice_0.20-41      splines_4.0.1       
-    ## [61] annotate_1.66.0      hms_0.5.3            knitr_1.28          
-    ## [64] pillar_1.4.4         codetools_0.2-16     lpSolve_5.6.15      
-    ## [67] stats4_4.0.1         XML_3.99-0.3         glue_1.4.1          
-    ## [70] evaluate_0.14        vctrs_0.3.1          foreach_1.5.0       
-    ## [73] gtable_0.3.0         openssl_1.4.1        purrr_0.3.4         
-    ## [76] tidyr_1.1.0          kernlab_0.9-29       assertthat_0.2.1    
-    ## [79] xfun_0.14            xtable_1.8-4         e1071_1.7-3         
-    ## [82] class_7.3-17         survival_3.1-12      iterators_1.0.12    
-    ## [85] AnnotationDbi_1.50.0 memoise_1.1.0        IRanges_2.22.2      
-    ## [88] ellipsis_0.3.1       GSEABase_1.50.1
+    ## [16] prettyunits_1.1.1    bit_1.1-15.2         curl_4.3            
+    ## [19] compiler_4.0.2       graph_1.66.0         Biobase_2.48.0      
+    ## [22] labeling_0.3         scales_1.1.1         genefilter_1.70.0   
+    ## [25] RBGL_1.64.0          askpass_1.1          rappdirs_0.3.1      
+    ## [28] stringr_1.4.0        digest_0.6.25        mixtools_1.2.0      
+    ## [31] rmarkdown_2.3        pkgconfig_2.0.3      htmltools_0.5.0     
+    ## [34] bcellViper_1.24.0    dbplyr_1.4.4         rlang_0.4.7         
+    ## [37] RSQLite_2.2.0        generics_0.0.2       farver_2.0.3        
+    ## [40] viper_1.22.0         RCurl_1.98-1.2       magrittr_1.5        
+    ## [43] Matrix_1.2-18        Rcpp_1.0.5           munsell_0.5.0       
+    ## [46] S4Vectors_0.26.1     lifecycle_0.2.0      stringi_1.4.6       
+    ## [49] yaml_2.2.1           UniProt.ws_2.28.0    MASS_7.3-51.6       
+    ## [52] BiocFileCache_1.12.0 blob_1.2.1           parallel_4.0.2      
+    ## [55] ggrepel_0.8.2        crayon_1.3.4         lattice_0.20-41     
+    ## [58] splines_4.0.2        annotate_1.66.0      hms_0.5.3           
+    ## [61] knitr_1.29           pillar_1.4.6         codetools_0.2-16    
+    ## [64] lpSolve_5.6.15       stats4_4.0.2         XML_3.99-0.4        
+    ## [67] glue_1.4.1           evaluate_0.14        vctrs_0.3.2         
+    ## [70] foreach_1.5.0        gtable_0.3.0         openssl_1.4.2       
+    ## [73] purrr_0.3.4          tidyr_1.1.0          kernlab_0.9-29      
+    ## [76] assertthat_0.2.1     xfun_0.15            xtable_1.8-4        
+    ## [79] e1071_1.7-3          class_7.3-17         survival_3.1-12     
+    ## [82] iterators_1.0.12     AnnotationDbi_1.50.1 memoise_1.1.0       
+    ## [85] IRanges_2.22.2       ellipsis_0.3.1       GSEABase_1.50.1
