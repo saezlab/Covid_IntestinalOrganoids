@@ -48,6 +48,8 @@ library(CARNIVAL)
 library(ggplot2)
 library(OmnipathR)
 library(biomaRt)
+library(grid)
+library(gridExtra)
 
 ## We also define a function to format the CARNIVAL output to cytoscape
 OutputCyto <- function(CarnivalResults, outputFile) {
@@ -132,6 +134,32 @@ ggplot(pathways_zscore_df,aes(x = reorder(Pathway, NES), y = NES)) +
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank()) +
     xlab("Pathways")
+```
+
+It is quite shocking that the MAPK pathway in un-active. This pathway was 
+usually found to be more active after SARS-CoV-2 infection in other studies.
+
+```{r, warning=FALSE, message=FALSE}
+weight_matrix <- getModel("Human", top=100)
+weight_matrix <- data.frame(names = row.names(weight_matrix), 
+  row.names = NULL, weight_matrix)
+plots <- progenyScatter(all_genes_dea_stat %>% 
+  tibble::rownames_to_column(var = "GeneID"), weight_matrix)
+```
+
+We therefore check which genes are contributing the most to the MAPK progeny 
+score. In these plots, we have the progeny scores for each pathway and stats
+of the different genes. In red, we will have the genes contributing to the 
+positive activation score and on blue the opposite. 
+
+```{r, dpi=300}
+grid.draw(plots[[1]]$MAPK)
+```
+
+We also check for the JAK-STAT pathway:
+
+```{r, dpi=300}
+grid.draw(plots[[1]]$JAK.STAT)
 ```
 
 ### Transcription factor activity with Dorothea and Viper. 
