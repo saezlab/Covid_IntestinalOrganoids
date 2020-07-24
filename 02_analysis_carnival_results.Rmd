@@ -419,6 +419,29 @@ for (i in seq_len(n)){
 }
 ```
 
+We finally show the enrichment results for the different clusters. One can 
+find in the following link the CARNIVAL output network with the different 
+clusters grouped along with the most significantly enriched processes: 
+
+<https://github.com/saezlab/Covid_IntestinalOrganoids/blob/master/Carnival_Results/carnival_results_top50tf_pleitropic_minsize15_undefinedEffectNetwork_Clusters.pdf>
+
+Some of the most interesting results are the following:
+
+- Cluster 2 is enriched in the signaling of the TGF beta pathway. Potential 
+treatments blocking this pathway have been proposed againts Covid-19. 
+
+- Cluster 3 is enriched in the hedgehog signaling pathway.The majority of the 
+proteins in this cluster are unactive. 
+
+- Cluster 5 is enriched in cell cycle arrest. Some studies have suggested the 
+arrest of the cell cycle after SARS-CoV-2 infection. 
+
+- Cluster 6 is enriched in the androgen receptor signaling pathway. There are 
+some studies suggesting that high levels of androgens might increase the risk of 
+severe infection and death from COVID-19.
+
+- Cluster 10 is enriched in interteron signaling. 
+
 Enrichment Cluster 1:
 
 ```{r, dpi=300, out.height= 700, out.width=800}

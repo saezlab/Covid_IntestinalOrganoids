@@ -525,7 +525,7 @@ OutputCyto(carnival_results_top50tf_pleitropic_minsize15_undefinedEffect,
 > MIRANDA DE GRAAF, MARION KOOPMANS, EDWIN CUPPEN, PETER J. PETERS, BART
 > L. HAAGMANS, HANS CLEVERS [SARS-CoV-2 productively infects human gut
 > enterocytes](https://science.sciencemag.org/content/369/6499/50),
-> *Science* July 202.
+> *Science* July 2020.
 
 ## Session Info Details
 
